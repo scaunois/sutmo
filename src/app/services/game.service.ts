@@ -25,16 +25,13 @@ export class GameService {
   private readonly _game: Game;
   private readonly revealDelayMs = 300;
   private allowedWords = new Set<string>(); // avoid using all dictionary words, by using only words matching the target's length
-  private revealSequence = 0;
   private errorTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this._game = this.buildNewGame();
 
     // Display first letter of the target word
-    this.game.board[0].letters[0] = this._game.targetWord[0];
-
-    this.revealSequence += 1;
+    this.game.board[0].letters[0] = this.game.targetWord[0];
 
     // Reacts to game status changes
     effect(() => {
@@ -50,36 +47,35 @@ export class GameService {
   }
 
   handleInput(character: string) {
-    if (this._game.isRevealing) {
+    if (this.game.isRevealing) {
       return;
     }
 
     const isLetter = /^[A-Z]$/.test(character);
-    const isAllowedSpecial = /^(ENTER|BACKSPACE|SHIFT|\.| )$/.test(character);
+    const isAllowedSpecial = /^(ENTER|BACKSPACE|DELETE|SHIFT|\.| )$/.test(character);
     if (!isLetter && !isAllowedSpecial) {
       this.setError('Caractère invalide');
       return;
     }
 
     // Shift key is allowed but should not trigger any action
-    // (it is only accepted to allow the key combination 'Shift + ;è to insert a '.',
+    // (it is only accepted to allow the key combination 'Shift + ;' to insert a '.',
     // otherwise, the first key press will trigger the error message)
     if (character === 'SHIFT') {
       return;
     }
 
-    if (character === 'BACKSPACE') {
+    const currentCellIndex = this.game.currentCellIndex;
+
+    if (character === 'BACKSPACE' || character === 'DELETE') {
       this.deleteLastLetter();
     } else if (character === '.' || character === ' ') {
       this.insertLetter('.');
     } else if (character === 'ENTER') {
       this.submitGuess();
     } else {
-      // Si l'utilisateur tape la première lettre du mot alors que le curseur
-      // est encore en position 1 (rien de saisi), on l'ignore silencieusement.
-      const row = this._game.board[this._game.currentRowIndex];
-      const cursorAtStart = row.letters.slice(1).every(l => l === '');
-      if (character === this._game.targetWord[0] && cursorAtStart) {
+      // If the user tries to type the word's first letter into the second cell, ignore it
+      if (this.game.currentCellIndex === 1 && character === this.game.targetWord[0]) {
         return;
       }
 
@@ -96,6 +92,7 @@ export class GameService {
       board: [...Array(MAX_ATTEMPTS)].map(() => this.createEmptyRow(targetWord.length)),
       keyboard: {},
       currentRowIndex: 0,
+      currentCellIndex: 1, // the first letter is always displayed (at index 0), so it's readonly (writable from index 1)
       targetWord,
       isRevealing: false,
       revealIndexByRow: new Array(MAX_ATTEMPTS).fill(-1),
@@ -116,22 +113,37 @@ export class GameService {
   }
 
   private insertLetter(letter: string): void {
-    const row = this._game.board[this._game.currentRowIndex];
-    const nextIndex = row.letters.findIndex((value, index) => index > 0 && value === '');
+    const currentCellIndex = this.game.currentCellIndex;
+    const row = this.game.board[this.game.currentRowIndex];
 
-    if (nextIndex !== -1) {
-      row.letters[nextIndex] = letter;
+    // if the last letter has been typed, prevent the player from typing another letter
+    // (he should either delete the last letter or press Enter to validate his attempt)
+    const isLastLetterTyped =
+      currentCellIndex === this.game.targetWord.length - 1 && row.letters[currentCellIndex] !== '';
+    if (isLastLetterTyped) {
+      return;
+    }
+
+    row.letters[currentCellIndex] = letter;
+    if (currentCellIndex !== this.game.targetWord.length - 1) {
+      this.game.currentCellIndex++;
     }
   }
 
   private deleteLastLetter(): void {
-    const row = this._game.board[this._game.currentRowIndex];
+    const row = this.game.board[this.game.currentRowIndex];
+    let removalIndex = -1;
 
-    for (let i = this.game.targetWord.length - 1; i >= 1; i -= 1) {
-      if (row.letters[i] !== '') {
-        row.letters[i] = '';
+    for (let i = this.game.targetWord.length - 1; i > 0; i--) {
+      if (row.letters[i] !== '' && i > 0) {
+        removalIndex = i;
         break;
       }
+    }
+
+    if (removalIndex !== -1) {
+      this.game.board[this.game.currentRowIndex].letters[removalIndex] = '';
+      this.game.currentCellIndex = removalIndex;
     }
   }
 
@@ -165,20 +177,14 @@ export class GameService {
   }
 
   private revealEvaluation(guess: string): void {
-    const sequence = ++this.revealSequence;
-
     const targetWordLength = this.game.targetWord.length;
     for (let i = 0; i < targetWordLength; i += 1) {
       window.setTimeout(
         () => {
-          if (sequence !== this.revealSequence) {
-            return;
-          }
-
           this.game.revealIndexByRow[this.game.currentRowIndex] = i;
 
           if (i === targetWordLength - 1) {
-            this.finishRevealedRow(guess, sequence);
+            this.finishRevealedRow(guess);
           }
         },
         this.revealDelayMs * (i + 1),
@@ -186,14 +192,10 @@ export class GameService {
     }
   }
 
-  private finishRevealedRow(guess: string, sequence: number): void {
-    if (sequence !== this.revealSequence) {
-      return;
-    }
-
+  private finishRevealedRow(guess: string): void {
     this.updateKeyboard(guess);
 
-    if (guess === this._game.targetWord) {
+    if (guess === this.game.targetWord) {
       this.status.set(GameStatus.WON);
       this.game.isRevealing = false;
       return;
@@ -206,8 +208,16 @@ export class GameService {
     }
 
     // Prepare next line
+    const currentRow = this.game.board[this.game.currentRowIndex];
     this.game.currentRowIndex++;
-    this.game.board[this.game.currentRowIndex].letters[0] = this.game.targetWord[0];
+    this.game.currentCellIndex = 1;
+    const newRow = this.game.board[this.game.currentRowIndex];
+    newRow.letters[0] = this.game.targetWord[0];
+    for (let i = 0; i < newRow.letters.length; i++) {
+      if (currentRow.states[i] === CellState.CORRECT) {
+        newRow.letters[i] = currentRow.letters[i];
+      }
+    }
 
     this.game.isRevealing = false;
   }

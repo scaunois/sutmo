@@ -81,4 +81,7 @@ export const TARGET_WORDS = [
   'CHANTER', // verb
   'BRUSQUE',
   'INDIGO',
+  'MEXICAIN',
+  'MENTHE',
+  'MENHIR',
 ];

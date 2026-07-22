@@ -4,7 +4,8 @@ export const MAX_ATTEMPTS = 6;
 export interface Game {
   targetWord: string;
   board: BoardRow[];
-  currentRowIndex: number;
+  currentRowIndex: number; // the row where the user is currently at
+  currentCellIndex: number; // the row where the user is currently typing
   keyboard: Record<string, KeyboardState>;
   // indicates that the UI is updating to show correct/present letters
   isRevealing: boolean;
