@@ -1,0 +1,14 @@
+<section class="mt-4" aria-label="Clavier virtuel">
+  <div class="d-flex gap-2 justify-content-center mb-2 flex-wrap" *ngFor="let line of rows">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      [ngClass]="'key-' + (keyboardState[key] ?? keyboardStates.UNKNOWN)"
+      *ngFor="let key of line"
+      (click)="keyPress.emit(key)"
+    >
+      {{ labels[key] ?? key }}
+    </button>
+  </div>
+</section>
+

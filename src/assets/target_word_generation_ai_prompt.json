@@ -1,0 +1,10 @@
+{
+  "model": "gemma4",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Propose-moi un mot unique, qui sera utilisé comme mot du jour à deviner dans un jeu. Ta réponse doit contenir un unique mot en majuscule, rien d'autre. Ci-après quelques règles à suivre pour le mot que tu proposeras. 1. Le mot doit être en français, avec uniquement des lettres, pas de caractères spéciaux stp. 2. Le mot doit être un nom commun, jamais de nom propre stp. 3. Le mot doit contenir entre 6 et 9 lettres. 4. Le mot peut être un verbe à l'infinitif, un nom ou un adjectif. mais pas un adverbe stp. 5. Si le mot est un nom ou un adjectif, il doit être au singulier. 6. Pas de pluriel, pas verbe conjugué, et pas de participe passé stp. 7. Régle additionnelle : on évite les mots commençant par K, Q, W, X, Y, et Z"
+    }
+  ],
+  "stream": false
+}

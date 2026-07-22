@@ -1,0 +1,14 @@
+<main class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-auto">
+      <app-game-header [targetWord]="game.targetWord" />
+      <app-game-board
+        [board]="game.board"
+        [currentRowIndex]="game.currentRowIndex"
+        [revealIndexByRow]="game.revealIndexByRow"
+      />
+      <app-error-message />
+      <app-virtual-keyboard [keyboardState]="game.keyboard" (keyPress)="onVirtualKey($event)" />
+    </div>
+  </div>
+</main>

@@ -1,0 +1,21 @@
+# dependencies
+/node_modules
+
+# build artifacts
+/dist/
+/out-tsc
+/coverage
+/.angular/
+
+# IDE
+/.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+

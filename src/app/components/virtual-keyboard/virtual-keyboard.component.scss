@@ -1,0 +1,43 @@
+
+.key-absent {
+  background-color: #64748b !important;
+  border-color: #64748b !important;
+  color: darkgrey !important;
+  opacity: 30%;
+}
+
+button.key-absent:hover {
+  background-color: initial;
+  color: var(--bs-btn-color);
+  cursor: not-allowed;
+}
+
+.key-present {
+  background-color: #fb7185 !important;
+  border-color: #fb7185 !important;
+  color: white;
+}
+
+button.key-present:hover {
+  background-color: initial;
+  color: white;
+}
+
+.key-correct {
+  background-color: #be185d !important;
+  border-color: #be185d !important;
+  color: white;
+}
+
+button.key-correct:hover {
+  background-color: initial;
+  color: white;
+}
+
+button.key-unknown:hover {
+  background-color: initial;
+  color: var(--bs-btn-color);
+}
+
+
+

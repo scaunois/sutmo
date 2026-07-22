@@ -1,0 +1,11 @@
+<section class="mb-4" aria-label="Grille du jeu">
+  <div class="d-flex justify-content-center" *ngFor="let row of board; let rowIndex = index">
+    <div
+      *ngFor="let letter of row.letters; let colIndex = index"
+      class="game-cell d-flex align-items-center justify-content-center border"
+      [ngClass]="getCellClass(rowIndex, colIndex)"
+    >
+      {{ letter }}
+    </div>
+  </div>
+</section>

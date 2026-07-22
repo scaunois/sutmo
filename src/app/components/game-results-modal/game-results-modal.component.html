@@ -1,0 +1,36 @@
+
+<div class="modal-header">
+    <h1 class="modal-title">{{ status === WON ? 'Bravo !' : 'Perdu !' }}</h1>
+    &nbsp;&nbsp;
+    <span class="fs-1">{{ status === WON ? '🎉' : '😥' }}</span>
+    <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+    <div>
+        @if (status === WON) {
+            <p>
+                Félicitations, vous avez trouvé le mot du jour. Revenez demain pour trouver un nouveau mot.
+            </p>
+        } @else {
+            <p>
+                Dommage, vous n'avez pas trouvé le mot dans le nombre de coups imparti. <br/>
+                Retentez votre chance demain pour trouver un nouveau mot.
+            </p>
+            <p>
+                Le mot du jour était : <strong>{{ targetWord }}</strong>
+            </p>
+        }
+    </div>
+    <div>
+        <h2 class="fs-4">Résumé de la partie</h2>
+        <div class="share-summary d-flex align-items-baseline gap-3">
+            <pre>{{ resultAsIcons }}</pre>
+            <button class="btn" (click)="copyToClipboard()"><u>Partager</u>📋</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <!-- not used for now -->
+</div>
