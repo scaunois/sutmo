@@ -18,6 +18,7 @@ export class AppComponent {
   private gameService = inject(GameService);
 
   game = this.gameService.game;
+  gameStatus = this.gameService.status.asReadonly();
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {

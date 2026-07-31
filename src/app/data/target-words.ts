@@ -98,4 +98,9 @@ export const TARGET_WORDS = [
   'EMBOUT',
   'FRITURE',
   'GAZEUX',
+  'TOPINAMBOUR',
+  'RUTABAGA',
+  'RONFLER',
+  'BETTERAVE',
+  'BIZARRE',
 ];

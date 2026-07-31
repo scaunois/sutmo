@@ -1,5 +1,5 @@
 <main class="container mt-5">
-    <app-game-header [targetWord]="game.targetWord"/>
+    <app-game-header [targetWord]="game.targetWord" [gameStatus]="gameStatus()"/>
     <app-game-board
             [board]="game.board"
             [currentRowIndex]="game.currentRowIndex"

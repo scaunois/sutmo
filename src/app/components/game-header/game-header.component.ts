@@ -15,8 +15,11 @@ export class GameHeaderComponent {
   private gameService = inject(GameService);
 
   @Input({ required: true }) targetWord!: string;
+  @Input({ required: true }) gameStatus!: GameStatus;
 
   displayResults(): void {
     this.gameService.displayResultsModal();
   }
+
+  protected readonly GameStatus = GameStatus;
 }
