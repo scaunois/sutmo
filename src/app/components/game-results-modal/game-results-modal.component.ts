@@ -34,7 +34,7 @@ export class GameResultsModalComponent {
   }
 
   copyToClipboard(): void {
-    let shareText = `SUTOM - ${this.attempts}/${MAX_ATTEMPTS} \n\n`;
+    let shareText = `SUTMO du jour : ${this.attempts}/${MAX_ATTEMPTS} - https://sutmo.netlify.app \n\n`;
     shareText += this.resultAsIcons;
     navigator.clipboard.writeText(shareText);
   }

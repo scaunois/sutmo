@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { GameStatus } from '../../models/game.types';
+import { GameService } from '../../services/game.service';
 
 @Component({
   selector: 'app-game-header',
@@ -11,5 +12,11 @@ import { GameStatus } from '../../models/game.types';
   styleUrl: './game-header.component.scss',
 })
 export class GameHeaderComponent {
+  private gameService = inject(GameService);
+
   @Input({ required: true }) targetWord!: string;
+
+  displayResults(): void {
+    this.gameService.displayResultsModal();
+  }
 }

@@ -9,8 +9,18 @@ export interface Game {
   keyboard: Record<string, KeyboardState>;
   // indicates that the UI is updating to show correct/present letters
   isRevealing: boolean;
-  // TODO comment
   revealIndexByRow: number[];
+}
+
+/**
+ * Retains player's progress for the daily  word, so that he doesn't lose it if reloading / reopening the app
+ */
+export interface GameProgress {
+  gameId: string;
+  gameStatus: GameStatus;
+  board: BoardRow[];
+  currentRowIndex: number;
+  keyboard: Record<string, KeyboardState>;
 }
 
 export enum CellState {

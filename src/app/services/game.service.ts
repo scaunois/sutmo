@@ -6,6 +6,7 @@ import {
   CellState,
   Game,
   GAME_START_DATE,
+  GameProgress,
   GameStatus,
   KeyboardState,
   MAX_ATTEMPTS,
@@ -28,10 +29,17 @@ export class GameService {
   private errorTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    this._game = this.buildNewGame();
+    // determine whether the game has already been started today or not
+    const playerProgress = localStorage.getItem('player-progress')
+      ? (JSON.parse(localStorage.getItem('player-progress')!) as GameProgress)
+      : null;
+    const isTodayGameInProgress = playerProgress?.gameId === btoa(new Date().toISOString().slice(0, 10));
 
-    // Display first letter of the target word
-    this.game.board[0].letters[0] = this.game.targetWord[0];
+    this._game = isTodayGameInProgress ? this.initGame(playerProgress) : this.initGame();
+    if (isTodayGameInProgress) {
+      this.status.set(playerProgress.gameStatus);
+    }
+    this.initView();
 
     // Reacts to game status changes
     effect(() => {
@@ -65,8 +73,6 @@ export class GameService {
       return;
     }
 
-    const currentCellIndex = this.game.currentCellIndex;
-
     if (character === 'BACKSPACE' || character === 'DELETE') {
       this.deleteLastLetter();
     } else if (character === '.' || character === ' ') {
@@ -83,15 +89,41 @@ export class GameService {
     }
   }
 
-  private buildNewGame(): Game {
+  displayResultsModal(): void {
+    const modalRef = this.modalService.open(GameResultsModalComponent, {
+      centered: true,
+      backdrop: 'static',
+      windowClass: `game-result-modal ${this.status() === GameStatus.WON ? 'success' : 'failure'}`,
+    });
+
+    const modalInstance = modalRef.componentInstance as GameResultsModalComponent;
+    modalInstance.status = this.status();
+    modalInstance.board = this.game.board;
+    modalInstance.targetWord = this.game.targetWord;
+    modalInstance.attempts = this.game.currentRowIndex + 1;
+
+    modalRef.closed.subscribe(result => {
+      console.log('confirmed', result);
+    });
+
+    modalRef.dismissed.subscribe(reason => {
+      console.log('cancelled', reason);
+    });
+  }
+
+  /**
+   * Initializes the game state, including the target word, allowed words, and the game board.
+   * Either create it from scratch, or retrieve it from local storage in a game has already been started.
+   */
+  private initGame(playerProgress?: GameProgress): Game {
     const targetWord = this.pickWord();
 
     this.allowedWords = new Set(DICTIONARY_WORDS.filter(word => word.length === targetWord.length));
 
     return {
-      board: [...Array(MAX_ATTEMPTS)].map(() => this.createEmptyRow(targetWord.length)),
-      keyboard: {},
-      currentRowIndex: 0,
+      board: playerProgress?.board ?? [...Array(MAX_ATTEMPTS)].map(() => this.createEmptyRow(targetWord.length)),
+      keyboard: playerProgress?.keyboard ?? {},
+      currentRowIndex: playerProgress?.currentRowIndex ?? 0,
       currentCellIndex: 1, // the first letter is always displayed (at index 0), so it's readonly (writable from index 1)
       targetWord,
       isRevealing: false,
@@ -110,6 +142,26 @@ export class GameService {
       letters: Array.from({ length: targetWordLength }, () => ''),
       states: Array.from({ length: targetWordLength }, () => CellState.EMPTY),
     };
+  }
+
+  /**
+   * Render initial view, whether if it's a new game, or a resumed game
+   */
+  private initView(): void {
+    if (this.game.board[0].letters[0] !== '') {
+      // an in progress game has been found --> re-render revealed letters for all attempts
+      for (let i = 0; i < this.game.board.length; i++) {
+        const row = this.game.board[i];
+        for (let j = 0; j < row.letters.length; j++) {
+          if (row.letters[j] !== '') {
+            this.game.revealIndexByRow[i] = j;
+          }
+        }
+      }
+    } else {
+      // it's a fresh game, no game in progress found in local storage --> display first letter of the target word
+      this.game.board[0].letters[0] = this.game.targetWord[0];
+    }
   }
 
   private insertLetter(letter: string): void {
@@ -198,26 +250,39 @@ export class GameService {
     if (guess === this.game.targetWord) {
       this.status.set(GameStatus.WON);
       this.game.isRevealing = false;
-      return;
     }
 
     if (this.game.currentRowIndex === MAX_ATTEMPTS - 1) {
       this.status.set(GameStatus.LOST);
       this.game.isRevealing = false;
-      return;
     }
 
-    // Prepare next line
-    const currentRow = this.game.board[this.game.currentRowIndex];
-    this.game.currentRowIndex++;
-    this.game.currentCellIndex = 1;
-    const newRow = this.game.board[this.game.currentRowIndex];
-    newRow.letters[0] = this.game.targetWord[0];
-    for (let i = 0; i < newRow.letters.length; i++) {
-      if (currentRow.states[i] === CellState.CORRECT) {
-        newRow.letters[i] = currentRow.letters[i];
+    if (this.status() === GameStatus.PLAYING) {
+      // game is not finished yet --> prepare next line
+      this.game.currentRowIndex++;
+      this.game.currentCellIndex = 1;
+      const newRow = this.game.board[this.game.currentRowIndex];
+      newRow.letters[0] = this.game.targetWord[0];
+      // Pre-fill correct letters from ALL previous rows (not just the last one)
+      for (let rowIdx = 0; rowIdx < this.game.currentRowIndex; rowIdx++) {
+        const pastRow = this.game.board[rowIdx];
+        for (let i = 0; i < newRow.letters.length; i++) {
+          if (pastRow.states[i] === CellState.CORRECT) {
+            newRow.letters[i] = pastRow.letters[i];
+          }
+        }
       }
     }
+
+    // save player's progress in local storage, to allow resuming the game
+    const playerProgress: GameProgress = {
+      gameId: btoa(new Date().toISOString().slice(0, 10)), // today's date encoded in base44
+      gameStatus: this.status(),
+      board: this.game.board,
+      currentRowIndex: this.game.currentRowIndex,
+      keyboard: this.game.keyboard,
+    };
+    localStorage.setItem('player-progress', JSON.stringify(playerProgress));
 
     this.game.isRevealing = false;
   }
@@ -295,27 +360,5 @@ export class GameService {
       this.errorMessage.set(null);
       this.errorTimeout = null;
     }, 3000);
-  }
-
-  private displayResultsModal(): void {
-    const modalRef = this.modalService.open(GameResultsModalComponent, {
-      centered: true,
-      backdrop: 'static',
-      windowClass: `game-result-modal ${this.status() === GameStatus.WON ? 'success' : 'failure'}`,
-    });
-
-    const modalInstance = modalRef.componentInstance as GameResultsModalComponent;
-    modalInstance.status = this.status();
-    modalInstance.board = this.game.board;
-    modalInstance.targetWord = this.game.targetWord;
-    modalInstance.attempts = this.game.currentRowIndex + 1;
-
-    modalRef.closed.subscribe(result => {
-      console.log('confirmed', result);
-    });
-
-    modalRef.dismissed.subscribe(reason => {
-      console.log('cancelled', reason);
-    });
   }
 }
