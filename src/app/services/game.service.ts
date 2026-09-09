@@ -45,7 +45,10 @@ export class GameService {
     effect(() => {
       const status = this.status();
       if (status !== GameStatus.PLAYING) {
-        this.displayResultsModal();
+        // display results modal after a short delay
+        setTimeout(() => {
+          this.displayResultsModal();
+        }, 500);
       }
     });
   }
