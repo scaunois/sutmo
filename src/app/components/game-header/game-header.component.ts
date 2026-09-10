@@ -17,6 +17,10 @@ export class GameHeaderComponent {
   @Input({ required: true }) targetWord!: string;
   @Input({ required: true }) gameStatus!: GameStatus;
 
+  displayGameRules(): void {
+    this.gameService.displayGameRulesModal();
+  }
+
   displayResults(): void {
     this.gameService.displayResultsModal();
   }

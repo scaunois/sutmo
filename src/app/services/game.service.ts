@@ -15,6 +15,7 @@ import {
 import { TARGET_WORDS } from '../data/target-words';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { GameResultsModalComponent } from '../components/game-results-modal/game-results-modal.component';
+import { GameRulesModalComponent } from '../components/game-rules-modal/game-rules-modal.component';
 
 @Injectable({ providedIn: 'root' })
 export class GameService {
@@ -90,6 +91,14 @@ export class GameService {
 
       this.insertLetter(character);
     }
+  }
+
+  displayGameRulesModal(): void {
+    this.modalService.open(GameRulesModalComponent, {
+      centered: true,
+      backdrop: 'static',
+      size: 'lg',
+    });
   }
 
   displayResultsModal(): void {

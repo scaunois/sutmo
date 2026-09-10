@@ -1,0 +1,30 @@
+<div class="modal-header">
+    <h1 class="modal-title">Règle du jeu</h1>
+    <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+    <p>
+      Devinez le mot du jour en un nombre limité d'essais !
+    </p>
+
+    <p>
+        Il s'agit d'un <strong>nom commun, d'un verbe à l'infinitif ou d'un adjectif (masculin singulier)</strong>. Pas de nom propre, pas de pluriel ou de forme conjuguée. <br/>
+        Pas de mot anglais ou autre langue étrangère, à moins que le mot soit couramment admis dans le langage français quotidien (exemple : weekend).
+    </p>
+
+    <ul>
+        <li>Vous avez un nombre limité d'essais.</li>
+        <li>Chaque tentative doit être un mot valide de notre dictionnaire (près de 150.000 mots).</li>
+        <li>Pour la saisie, les formes accordées (conjugaison, pluriel, féminin) sont autorisées.</li>
+        <li>Les lettres que vous avez trouvées seront pré-remplies pour vous faciliter la visualisation, mais vous pouvez les effacer</li>
+        <li>Si besoin, vous pouvez saisir un point ou un espace.</li>
+    </ul>
+
+    <p>
+        Une lettre entourée d'un carré rose foncé <img src="assets/image/correct_letter.png" width="30" class="align-text-bottom" /> est bien placée. <br/>
+        Une lettre entourée d'un cercle rose clair <img src="assets/image/present_letter.png" width="30" class="align-text-bottom" /> est présente dans le mot, mais à une place différente. <br/>
+        Une lettre sans marquage (fond transparent) <img src="assets/image/absent_letter.png" width="30" class="align-text-bottom" /> est absente du mot.
+    </p>
+</div>
+

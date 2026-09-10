@@ -1,5 +1,11 @@
 <header class="position-relative text-center mb-4">
+    <div class="position-absolute top-50 start-0 translate-middle-y">
+        <button class="btn btn-outline-secondary" type="button"
+            (click)="displayGameRules()">Règle du jeu</button>
+    </div>
+
     <h1 class="display-5 m-0">SUTMO</h1>
+
     <div class="position-absolute top-50 end-0 translate-middle-y">
         <button class="btn btn-outline-secondary"
                 [disabled]="gameStatus === GameStatus.PLAYING"
